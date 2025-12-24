@@ -92,11 +92,12 @@
     /* 5. TABEL (Horizontal Scroll) */
     /* ---------------------------------------------------- */
     .table-responsive { 
-        overflow-x: auto; 
+        overflow: auto; /* Memungkinkan scrolling horizontal */
         margin-top: 1rem; 
         border-radius: 0.5rem; 
         box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1); 
         background-color: white;
+        position: relative; /* Penting untuk Sticky Header */
     }
     table { 
         width: 100%; 
@@ -111,15 +112,33 @@
         font-size: 0.85rem; 
         white-space: nowrap; 
     }
+    /* STICKY HEADER (Vertikal) */
     th { 
         background-color: #eff6ff; 
         color: #1e40af; 
-        position: sticky; 
-        top: 0; 
+        position: sticky; /* Kunci Sticky */
+        top: 0;           /* Tetap di atas */
         font-weight: 700; 
-        z-index: 10; 
+        z-index: 20;      /* Di atas sel lain saat scroll */
     }
-    #dailyTable tbody tr:nth-child(even) { background-color: #f9fafb; } 
+    
+    /* STICKY KOLOM PERTAMA (Horizontal: Kolom TANGGAL) */
+    th:first-child, td:first-child {
+        position: sticky; /* Kunci Sticky */
+        left: 0;          /* Tetap di kiri */
+        z-index: 10;      /* Lebih rendah dari Header */
+        background-color: #f0f7ff; /* Warna latar berbeda agar terlihat */
+        font-weight: 600;
+    }
+    /* Kasus Khusus: Sudut (Header & Kolom 1) harus lebih tinggi */
+    th:first-child {
+        z-index: 30; /* Paling tinggi agar selalu terlihat */
+    }
+    /* Fix latar belakang saat berpotongan dengan latar belakang baris ganjil/genap */
+    #dailyTable tbody tr:nth-child(even) td:first-child { background-color: #e3f2ff; } 
+    #dailyTable tbody tr:nth-child(odd) td:first-child { background-color: #f0f7ff; } 
+    /* ---------------------------------------------------- */
+     
 
     /* ---------------------------------------------------- */
     /* 6. FORMAT BERSYARAT (Conditional Formatting) */
