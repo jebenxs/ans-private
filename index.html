@@ -125,7 +125,7 @@
     /* 6. FORMAT BERSYARAT (Conditional Formatting) */
     /* ---------------------------------------------------- */
     .bg-red { background-color: #fee2e2 !important; color: #b91c1c; } 
-    .bg-green { background-color: #d1fae5 !important; color: #b45309; font-weight: bold;} 
+    .bg-green { background-color: #d1fae5 !important; color: #b91c1c; font-weight: bold;} 
     .bg-amber { background-color: #fffbeb !important; color: #b45309; } 
     .strikethrough { text-decoration: line-through; } 
   </style>
@@ -166,7 +166,7 @@
     <div id="statusMessage" class="status-msg" style="color:red;"></div>
     <div id="summaryDisplay" class="summary-box"></div>
 
-    <h3>Rekap Data</h3>
+    <h3 id="tableTittle">Rekap Data</h3>
     <div class="table-responsive">
         <table id="dailyTable">
             <thead>
@@ -220,6 +220,7 @@
         document.getElementById('bulan').value = dataLaporan.bulan;
         document.getElementById('tahun').value = dataLaporan.tahun;
         document.getElementById('reportTitle').textContent = `Estimasi Gaji Bulan ${dataLaporan.bulan} ${dataLaporan.tahun}`;
+		document.getElementById('tableTittle').textContent = `Rekap Data ${dataLaporan.bulan} ${dataLaporan.tahun}`;
         
         // 2. Render Summary
         const summaryDiv = document.getElementById('summaryDisplay');
