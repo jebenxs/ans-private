@@ -108,7 +108,8 @@
   
   <script>
     // GANTI URL INI DENGAN URL DEPLOYMENT EXEC UTAMA DARI Apps Script doGet Anda
-    const API_ENDPOINT = 'https://script.google.com/macros/s/AKfycbz5RBFqX-5qRNNX7o4furDr9gIFHGYEIZoThxLUNWSROf2nITPH_F8WElXQ_1nNGdg3Ww/exec';
+    const API_ENDPOINT = 'PASTIKAN_GANTI_INI_DENGAN_URL_DEPLOYMENT_ANDA'; 
+    
     // --- UTILITY FUNCTIONS ---
     function createSummaryItem(label, value) {
         if (!label || !value) return null;
@@ -119,54 +120,42 @@
         return row;
     }
     
+    // --- RENDER DATA ---
     function renderData(data) {
-        const dataLaporan = data.data; // Akses properti 'data' dari respons API
+        const dataLaporan = data.data; 
         document.getElementById('loading').style.display = 'none';
         
+        // Bersihkan
         document.getElementById('summaryDisplay').innerHTML = '';
         document.getElementById('dailyTable').getElementsByTagName('tbody')[0].innerHTML = '';
 
+        // 1. Update Form, Header
         document.getElementById('bulan').value = dataLaporan.bulan;
         document.getElementById('tahun').value = dataLaporan.tahun;
         document.getElementById('reportTitle').textContent = `Laporan Bulan ${dataLaporan.bulan} ${dataLaporan.tahun}`;
-
-        // 1. Render Summary
+        
+        // 2. Render Summary
         const summaryDiv = document.getElementById('summaryDisplay');
         const sData = dataLaporan.summary;
+        // Kita menggunakan definisi dari kode HTML lama Anda
         const summaryItems = [
-            { label: sData[0][0], value: sData[0][1] }, { label: sData[1][0], value: sData[1][1] }, 
-            { label: sData[2][0], value: sData[2][1] }, { label: sData[3][0], value: sData[3][1] }, 
-            { label: sData[1][4], value: sData[1][5] }, { label: sData[0][10], value: sData[0][11] }, 
-            { label: sData[1][10], value: sData[1][11] } 
-        ];
+            { label: sData[0][0], value: sData[0][1] }, { label: sData[1][0], value: sData[1][1] },
+            { label: sData[2][0], value: sData[2][1] }, { label: sData[3][0], value: sData[3][1] },
+            { label: sData[1][4], value: sData[1][5] }, // Estimasi Gaji
+            { label: sData[0][10], value: sData[0][11] }, // Jam Lembur
+            { label: sData[1][10], value: sData[1][11] } // Lembur Masak
+        ];
         summaryItems.forEach(item => {
             const element = createSummaryItem(item.label, item.value);
             if(element) summaryDiv.appendChild(element);
         });
 
-        // 2. Render Daily Table
+        // 3. Render Daily Table
         const tbody = document.getElementById('dailyTable').getElementsByTagName('tbody')[0];
         dataLaporan.daily.forEach(row => {
             if (row.every(cell => cell === "" || cell === null)) return; 
             const tr = tbody.insertRow();
-            const statusHari = String(row[2]).toUpperCase().trim(); 
-            const ciclok = parseFloat(row[3]) || 0; 
-            let rowClass = '';
-            let applyStrikethrough = false;
-
-            if (statusHari.includes('LIBUR NASIONAL') || statusHari.includes('MINGGU')) {
-                if (ciclok > 0) {
-                    rowClass = 'bg-green';
-                } else {
-                    rowClass = 'bg-red'; 
-                    applyStrikethrough = true;
-                }
-            } else if (statusHari.includes('HK') && ciclok === 0) {
-                rowClass = 'bg-amber';
-                applyStrikethrough = true;
-            }
-            if (rowClass) { tr.classList.add(rowClass); }
-
+            
             row.forEach((cellData) => {
                 const td = tr.insertCell();
                 if (cellData instanceof Date) {
@@ -176,7 +165,6 @@
                 } else {
                     td.textContent = cellData;
                 }
-                if (applyStrikethrough) { td.classList.add('strikethrough'); }
             });
         });
         
@@ -188,28 +176,37 @@
 
     // --- FETCH DATA FUNCTION ---
     async function fetchData(bulan, tahun) {
-        document.getElementById('statusMessage').textContent = '';
-        document.getElementById('loading').textContent = 'Memuat data, harap tunggu...';
-        document.getElementById('loading').style.display = 'block';
+        const statusDiv = document.getElementById('statusMessage');
+        const loadingDiv = document.getElementById('loading');
+        
+        statusDiv.textContent = '';
+        loadingDiv.textContent = 'Memuat data, harap tunggu...';
+        loadingDiv.style.display = 'block';
 
         try {
+            // Kita kirim bulan/tahun sebagai parameter URL untuk diolah doGet
             const url = `${API_ENDPOINT}?bulan=${bulan.toUpperCase()}&tahun=${tahun}`;
             
             const response = await fetch(url);
+            // Cek jika response sukses (HTTP 200-299)
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
             const result = await response.json();
 
-            document.getElementById('loading').style.display = 'none';
+            loadingDiv.style.display = 'none';
 
             if (result.success) {
                 renderData(result);
             } else {
-                document.getElementById('statusMessage').textContent = result.message;
-                document.getElementById('statusMessage').style.color = 'red';
+                statusDiv.textContent = result.message;
+                statusDiv.style.color = 'red';
             }
         } catch (error) {
-            document.getElementById('loading').style.display = 'none';
-            document.getElementById('statusMessage').textContent = 'Error saat mengambil data: Pastikan URL API sudah benar dan di-deploy sebagai "Executor" (Anyone).';
-            document.getElementById('statusMessage').style.color = 'red';
+            loadingDiv.style.display = 'none';
+            statusDiv.textContent = 'Error saat mengambil data: Pastikan URL API sudah benar dan di-deploy.';
+            statusDiv.style.color = 'red';
             console.error('Fetch Error:', error);
         }
     }
